@@ -16,6 +16,7 @@ export function VisaSelection({ selectedVisa, onVisaSelect, onTabChange }: VisaS
       title: "Extraordinary Ability",
       description: "For individuals with extraordinary ability in sciences, arts, education, business, or athletics",
       processingTime: "8-16 months",
+      premiumProcessing: "15 calendar days (I-140)",
       requirements: [
         "Must meet 3 out of 10 criteria",
         "Evidence of sustained national or international acclaim",
@@ -40,6 +41,7 @@ export function VisaSelection({ selectedVisa, onVisaSelect, onTabChange }: VisaS
       title: "National Interest Waiver",
       description: "For professionals whose work is in the national interest of the United States",
       processingTime: "12-24 months",
+      premiumProcessing: "45 calendar days (I-140 NIW)",
       requirements: [
         "Advanced degree or exceptional ability",
         "Work must be in the national interest",
@@ -59,6 +61,7 @@ export function VisaSelection({ selectedVisa, onVisaSelect, onTabChange }: VisaS
       title: "Extraordinary Ability (Temporary)",
       description: "Temporary visa for individuals with extraordinary ability or achievement",
       processingTime: "2-4 months",
+      premiumProcessing: "15 calendar days (I-129)",
       requirements: [
         "Must meet 3 out of 8 criteria",
         "Sustained national or international recognition",
@@ -75,6 +78,45 @@ export function VisaSelection({ selectedVisa, onVisaSelect, onTabChange }: VisaS
         "High salary or remuneration"
       ],
       color: "purple"
+    }
+    ,
+    {
+      type: "L-1A",
+      title: "Intracompany Transferee (Executive/Manager)",
+      description: "For executives or managers transferring from a foreign office to a U.S. office",
+      processingTime: "2-4 months",
+      premiumProcessing: "15 calendar days (I-129)",
+      requirements: [
+        "Worked for qualifying organization abroad for 1 continuous year in last 3",
+        "Position in the U.S. will be executive or managerial",
+        "Qualifying relationship between foreign and U.S. entities"
+      ],
+      criteria: [
+        "Evidence of executive/managerial duties",
+        "Organizational charts and staffing",
+        "Proof of qualifying corporate relationship",
+        "Business plans and U.S. operations evidence"
+      ],
+      color: "green"
+    },
+    {
+      type: "H-1B",
+      title: "Specialty Occupation",
+      description: "For professionals in specialty occupations requiring at least a bachelor's degree",
+      processingTime: "3-6 months (post-selection)",
+      premiumProcessing: "15 calendar days (I-129)",
+      requirements: [
+        "Bachelor's degree or higher in specific specialty",
+        "Employer-employee relationship",
+        "Position qualifies as specialty occupation"
+      ],
+      criteria: [
+        "Degree evaluation and transcripts",
+        "Detailed job description",
+        "LCA approval (Form ETA-9035)",
+        "Evidence of employer-employee relationship"
+      ],
+      color: "blue"
     }
   ]
 
@@ -116,6 +158,13 @@ export function VisaSelection({ selectedVisa, onVisaSelect, onTabChange }: VisaS
                 <Clock className="h-4 w-4 text-muted-foreground" />
                 <span className="text-sm">Processing: {visa.processingTime}</span>
               </div>
+
+              {"premiumProcessing" in visa && (
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-primary" />
+                  <span className="text-sm">Premium processing: {(visa as any).premiumProcessing}</span>
+                </div>
+              )}
 
               <div>
                 <h4 className="text-sm font-medium mb-2">Key Requirements:</h4>

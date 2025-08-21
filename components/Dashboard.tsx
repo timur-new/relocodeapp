@@ -2,13 +2,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "./ui/
 import { Progress } from "./ui/progress"
 import { Badge } from "./ui/badge"
 import { Button } from "./ui/button"
-import { CheckCircle, Clock, FileText, AlertCircle } from "lucide-react"
+import { CheckCircle, Clock, FileText, AlertCircle, Plus } from "lucide-react"
+import { useAdminMaterials } from "./AdminMaterialsContext"
 
 interface DashboardProps {
   onTabChange: (tab: string) => void
 }
 
 export function Dashboard({ onTabChange }: DashboardProps) {
+  const { addExample, addFaq, addVideo } = useAdminMaterials()
   const mockUser = {
     name: "Alex Johnson",
     email: "alex.johnson@email.com",
@@ -133,6 +135,42 @@ export function Dashboard({ onTabChange }: DashboardProps) {
               onClick={() => onTabChange('application')}
             >
               Continue Application
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-6 md:grid-cols-3">
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin: Examples of completed criteria</CardTitle>
+            <CardDescription>Add sample files users can view</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button size="sm" onClick={() => addExample('EB-1A', { title: `New Example ${(Date.now())}`, description: 'Uploaded via dashboard' })}>
+              <Plus className="h-4 w-4 mr-1" /> Add Example
+            </Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin: FAQ</CardTitle>
+            <CardDescription>Add a new FAQ entry</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button size="sm" onClick={() => addFaq('EB-1A', { question: 'How long does review take?', answer: 'Varies by workload; premium processing available for some forms.' })}>
+              <Plus className="h-4 w-4 mr-1" /> Add FAQ
+            </Button>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader>
+            <CardTitle>Admin: Video to help you</CardTitle>
+            <CardDescription>Add tutorial links</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button size="sm" onClick={() => addVideo('EB-1A', { title: 'Overview walkthrough', url: 'https://example.com/video/overview' })}>
+              <Plus className="h-4 w-4 mr-1" /> Add Video
             </Button>
           </CardContent>
         </Card>

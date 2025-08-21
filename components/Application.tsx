@@ -4,8 +4,9 @@ import { Badge } from "./ui/badge"
 import { Checkbox } from "./ui/checkbox"
 import { Progress } from "./ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
-import { CheckCircle, Upload, FileText, AlertTriangle } from "lucide-react"
-import { useState } from "react"
+import { CheckCircle, Upload, FileText, AlertTriangle, Info } from "lucide-react"
+import { useMemo, useState } from "react"
+import { useAdminMaterials } from "./AdminMaterialsContext"
 
 interface ApplicationProps {
   selectedVisa: string
@@ -16,13 +17,16 @@ export function Application({ selectedVisa, onTabChange }: ApplicationProps) {
   const [selectedCriteria, setSelectedCriteria] = useState<string[]>([
     "major-awards", "media-coverage", "judging"
   ])
+  const [expandedCriteria, setExpandedCriteria] = useState<Record<string, boolean>>({})
+  const [uploadsByCriterion, setUploadsByCriterion] = useState<Record<string, string[]>>({})
+  const { examplesByVisa, faqsByVisa, videosByVisa } = useAdminMaterials()
 
   const visaCriteria = {
     "EB-1A": [
       {
         id: "major-awards",
-        title: "Receipt of major internationally recognized awards",
-        description: "Nobel Prize, Pulitzer Prize, Olympic medals, or similar major awards",
+        title: "Receipt of awards or prizes for excellence",
+        description: "Major national or international prizes i.e. Best App, Outstanding Entrepreneur, Innovation of the Year",
         required: false,
         strength: "high"
       },
@@ -215,6 +219,43 @@ export function Application({ selectedVisa, onTabChange }: ApplicationProps) {
     ? selectedRequired === requiredCriteria.length
     : selectedOptional >= minRequired
 
+  const criterionDetails: Record<string, {
+    requirements: string[]
+    documents: string[]
+    info: string
+  }> = useMemo(() => ({
+    "major-awards": {
+      requirements: [
+        "Prize recognizes excellence in the field",
+        "Awarding body is credible with published selection criteria",
+      ],
+      documents: ["Award certificate", "Photo of the award", "Official announcement/press release", "Media coverage (if any)"],
+      info: "Awards can be industry-level (e.g., Best App, Innovation of the Year) if well documented.",
+    },
+    "media-coverage": {
+      requirements: ["Independent third-party coverage", "Focus is on your achievements"],
+      documents: ["PDFs or screenshots", "Permalinks/archives", "Translations if not in English"],
+      info: "Prefer reputable outlets; add context on reach/circulation.",
+    },
+    "judging": {
+      requirements: ["Selective invitation or role", "Related to your field"],
+      documents: ["Invitation letters", "Event overview", "Listing showing you as judge"],
+      info: "Hackathons, conferences, and peer review panels can qualify.",
+    },
+  }), [])
+
+  const handleToggleExpand = (criteriaId: string) => {
+    setExpandedCriteria(prev => ({ ...prev, [criteriaId]: !prev[criteriaId] }))
+  }
+
+  const handleMockUpload = (criteriaId: string) => {
+    const nextName = `Evidence_${(uploadsByCriterion[criteriaId]?.length ?? 0) + 1}.pdf`
+    setUploadsByCriterion(prev => ({
+      ...prev,
+      [criteriaId]: [...(prev[criteriaId] ?? []), nextName]
+    }))
+  }
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex items-center justify-between">
@@ -277,24 +318,54 @@ export function Application({ selectedVisa, onTabChange }: ApplicationProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 {requiredCriteria.map((criteria) => (
-                  <div key={criteria.id} className="flex items-start space-x-3 p-3 border rounded-lg">
-                    <Checkbox
-                      id={criteria.id}
-                      checked={selectedCriteria.includes(criteria.id)}
-                      onCheckedChange={() => handleCriteriaToggle(criteria.id)}
-                    />
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <label htmlFor={criteria.id} className="font-medium cursor-pointer">
-                          {criteria.title}
-                        </label>
-                        <Badge variant="destructive" className="text-xs">Required</Badge>
-                        <Badge variant={criteria.strength === 'high' ? 'default' : 'secondary'} className="text-xs">
-                          {criteria.strength} strength
-                        </Badge>
+                  <div key={criteria.id} className="flex flex-col gap-2 p-3 border rounded-lg">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id={criteria.id}
+                        checked={selectedCriteria.includes(criteria.id)}
+                        onCheckedChange={() => handleCriteriaToggle(criteria.id)}
+                      />
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <label htmlFor={criteria.id} className="font-medium cursor-pointer">
+                            {criteria.title}
+                          </label>
+                          <Badge variant="destructive" className="text-xs">Required</Badge>
+                          <Badge variant={criteria.strength === 'high' ? 'default' : 'secondary'} className="text-xs">
+                            {criteria.strength} strength
+                          </Badge>
+                          <Button variant="outline" size="sm" onClick={() => handleToggleExpand(criteria.id)}>
+                            <Info className="h-3 w-3 mr-1" />
+                            {expandedCriteria[criteria.id] ? 'Hide details' : 'View details'}
+                          </Button>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{criteria.description}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground">{criteria.description}</p>
                     </div>
+                    {expandedCriteria[criteria.id] && (
+                      <div className="rounded-md bg-muted/40 p-3 space-y-3">
+                        <div>
+                          <h5 className="text-sm font-medium mb-1">Requirements</h5>
+                          <ul className="text-sm text-muted-foreground list-disc pl-4">
+                            {(criterionDetails[criteria.id]?.requirements ?? ["See Instructions tab for details"]).map((r, i) => (
+                              <li key={i}>{r}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-medium mb-1">Documents Necessary</h5>
+                          <ul className="text-sm text-muted-foreground list-disc pl-4">
+                            {(criterionDetails[criteria.id]?.documents ?? ["Attach relevant proof"]).map((d, i) => (
+                              <li key={i}>{d}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-medium mb-1">Other Information</h5>
+                          <p className="text-sm text-muted-foreground">{criterionDetails[criteria.id]?.info ?? 'Refer to the Instructions > Criteria Guide for more.'}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </CardContent>
@@ -312,23 +383,53 @@ export function Application({ selectedVisa, onTabChange }: ApplicationProps) {
               </CardHeader>
               <CardContent className="space-y-4">
                 {optionalCriteria.map((criteria) => (
-                  <div key={criteria.id} className="flex items-start space-x-3 p-3 border rounded-lg">
-                    <Checkbox
-                      id={criteria.id}
-                      checked={selectedCriteria.includes(criteria.id)}
-                      onCheckedChange={() => handleCriteriaToggle(criteria.id)}
-                    />
-                    <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-2">
-                        <label htmlFor={criteria.id} className="font-medium cursor-pointer">
-                          {criteria.title}
-                        </label>
-                        <Badge variant={criteria.strength === 'high' ? 'default' : criteria.strength === 'medium' ? 'secondary' : 'outline'} className="text-xs">
-                          {criteria.strength} strength
-                        </Badge>
+                  <div key={criteria.id} className="flex flex-col gap-2 p-3 border rounded-lg">
+                    <div className="flex items-start space-x-3">
+                      <Checkbox
+                        id={criteria.id}
+                        checked={selectedCriteria.includes(criteria.id)}
+                        onCheckedChange={() => handleCriteriaToggle(criteria.id)}
+                      />
+                      <div className="flex-1 space-y-1">
+                        <div className="flex items-center gap-2">
+                          <label htmlFor={criteria.id} className="font-medium cursor-pointer">
+                            {criteria.title}
+                          </label>
+                          <Badge variant={criteria.strength === 'high' ? 'default' : criteria.strength === 'medium' ? 'secondary' : 'outline'} className="text-xs">
+                            {criteria.strength} strength
+                          </Badge>
+                          <Button variant="outline" size="sm" onClick={() => handleToggleExpand(criteria.id)}>
+                            <Info className="h-3 w-3 mr-1" />
+                            {expandedCriteria[criteria.id] ? 'Hide details' : 'View details'}
+                          </Button>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{criteria.description}</p>
                       </div>
-                      <p className="text-sm text-muted-foreground">{criteria.description}</p>
                     </div>
+                    {expandedCriteria[criteria.id] && (
+                      <div className="rounded-md bg-muted/40 p-3 space-y-3">
+                        <div>
+                          <h5 className="text-sm font-medium mb-1">Requirements</h5>
+                          <ul className="text-sm text-muted-foreground list-disc pl-4">
+                            {(criterionDetails[criteria.id]?.requirements ?? ["See Instructions tab for details"]).map((r, i) => (
+                              <li key={i}>{r}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-medium mb-1">Documents Necessary</h5>
+                          <ul className="text-sm text-muted-foreground list-disc pl-4">
+                            {(criterionDetails[criteria.id]?.documents ?? ["Attach relevant proof"]).map((d, i) => (
+                              <li key={i}>{d}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div>
+                          <h5 className="text-sm font-medium mb-1">Other Information</h5>
+                          <p className="text-sm text-muted-foreground">{criterionDetails[criteria.id]?.info ?? 'Refer to the Instructions > Criteria Guide for more.'}</p>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 ))}
               </CardContent>
@@ -339,20 +440,91 @@ export function Application({ selectedVisa, onTabChange }: ApplicationProps) {
         <TabsContent value="documents" className="space-y-4">
           <Card>
             <CardHeader>
-              <CardTitle>Document Checklist</CardTitle>
-              <CardDescription>Upload supporting documents for your selected criteria</CardDescription>
+              <CardTitle>Upload by Selected Criteria</CardTitle>
+              <CardDescription>Provide documents specific to each criterion you selected</CardDescription>
             </CardHeader>
-            <CardContent>
-              <Button 
-                variant="outline" 
-                className="w-full h-24 border-dashed"
-                onClick={() => onTabChange('documents')}
-              >
-                <div className="flex flex-col items-center gap-2">
-                  <Upload className="h-6 w-6" />
-                  <span>Go to Document Management</span>
+            <CardContent className="space-y-4">
+              {selectedCriteria.map((id) => {
+                const details = criterionDetails[id]
+                return (
+                  <div key={id} className="p-3 border rounded-lg space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="font-medium text-sm">{currentCriteria.find(c => c.id === id)?.title ?? id}</div>
+                      <Button size="sm" onClick={() => handleMockUpload(id)}>
+                        <Upload className="h-4 w-4 mr-1" /> Upload
+                      </Button>
+                    </div>
+                    <div>
+                      <h5 className="text-xs font-medium mb-1">Suggested documents:</h5>
+                      <ul className="text-xs text-muted-foreground list-disc pl-4">
+                        {(details?.documents ?? ["Attach relevant proof"]).map((d, i) => (
+                          <li key={i}>{d}</li>
+                        ))}
+                      </ul>
+                    </div>
+                    {(uploadsByCriterion[id] ?? []).length > 0 && (
+                      <div className="space-y-1">
+                        <h5 className="text-xs font-medium">Uploaded:</h5>
+                        <ul className="text-xs text-muted-foreground list-disc pl-4">
+                          {(uploadsByCriterion[id] ?? []).map((f, i) => (
+                            <li key={i}>{f}</li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )
+              })}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Examples of completed criteria</CardTitle>
+              <CardDescription>Admin-provided samples to guide your preparation</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {(examplesByVisa[selectedVisa as keyof typeof examplesByVisa] ?? []).map((ex, i) => (
+                <div key={i} className="p-3 border rounded flex items-center justify-between">
+                  <div>
+                    <div className="text-sm font-medium">{ex.title}</div>
+                    {ex.description && <div className="text-xs text-muted-foreground">{ex.description}</div>}
+                  </div>
+                  {ex.url && (
+                    <a className="text-xs text-primary underline" href={ex.url} target="_blank" rel="noreferrer">Open</a>
+                  )}
                 </div>
-              </Button>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>FAQ</CardTitle>
+              <CardDescription>Frequently asked questions for {selectedVisa}</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {(faqsByVisa[selectedVisa as keyof typeof faqsByVisa] ?? []).map((faq, i) => (
+                <div key={i} className="p-3 border rounded">
+                  <div className="text-sm font-medium">{faq.question}</div>
+                  <div className="text-xs text-muted-foreground">{faq.answer}</div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Video to help you</CardTitle>
+              <CardDescription>Tutorials and walkthroughs</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {(videosByVisa[selectedVisa as keyof typeof videosByVisa] ?? []).map((v, i) => (
+                <div key={i} className="p-3 border rounded flex items-center justify-between">
+                  <div className="text-sm font-medium">{v.title}</div>
+                  <a className="text-xs text-primary underline" href={v.url} target="_blank" rel="noreferrer">Watch</a>
+                </div>
+              ))}
             </CardContent>
           </Card>
         </TabsContent>

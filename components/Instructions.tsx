@@ -17,11 +17,11 @@ export function Instructions() {
       ],
       criteria: [
         {
-          title: "Receipt of major internationally recognized awards",
-          description: "Evidence of receipt of major internationally recognized awards or prizes for excellence",
-          examples: ["Nobel Prize", "Pulitzer Prize", "Olympic medals", "Grammy Awards", "Academy Awards"],
+          title: "Receipt of awards or prizes for excellence",
+          description: "Evidence of receipt of meaningful awards or prizes recognizing excellence in your field",
+          examples: ["Best App", "Innovation of the Year", "Outstanding Entrepreneur", "Industry Top Performer"],
           evidenceTypes: ["Award certificates", "Official announcements", "Media coverage"],
-          tips: "This is the strongest possible evidence. If you have this, you may not need to prove other criteria."
+          tips: "Major internationally recognized awards (e.g., Nobel Prize, Pulitzer Prize, Olympic medals) are extremely strong if available."
         },
         {
           title: "Membership in associations requiring outstanding achievements", 

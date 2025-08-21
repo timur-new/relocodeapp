@@ -3,7 +3,7 @@ import { Button } from "./ui/button"
 import { Badge } from "./ui/badge"
 import { Progress } from "./ui/progress"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs"
-import { Upload, FileText, Download, Trash2, Eye, CheckCircle, AlertCircle } from "lucide-react"
+import { Upload, FileText, Download, Trash2, Eye, CheckCircle, AlertCircle, Info } from "lucide-react"
 import { useState } from "react"
 
 export function Documents() {
@@ -45,10 +45,10 @@ export function Documents() {
   const documentCategories = [
     {
       name: "Personal Documents",
-      required: ["CV/Resume", "Passport Copy"],
-      optional: ["Academic Transcripts"],
+      required: ["Passport", "CV", "Residence of other countries (if any)", "Spouse passport", "Child passport"],
+      optional: ["Other relevant documents"],
       uploaded: 1,
-      total: 3
+      total: 6
     },
     {
       name: "Letters of Recommendation", 
@@ -127,6 +127,23 @@ export function Documents() {
   const totalRequired = documentCategories.reduce((sum, cat) => sum + cat.total, 0)
   const progressPercentage = (totalUploaded / totalRequired) * 100
 
+  const docHelpText: Record<string, string> = {
+    "Expert Opinion Letters (3-5)": "Letters should be detailed, from recognized experts, and connect achievements to criteria.",
+    "Award Certificates": "High-resolution scans of certificates; include translation if needed.",
+    "Publication List": "List with full citations and links; include citation metrics if available.",
+    "Citation Reports": "Provide Google Scholar or similar analytics with date screenshots.",
+    "Work Portfolio": "Curate best work with brief captions and dates.",
+    "Passport": "Clear scan of the biographic page.",
+    "CV": "Up-to-date resume with achievements and roles.",
+    "Residence of other countries (if any)": "Residence permits or visas from other countries.",
+    "Spouse passport": "If applicable, include spouse's biographic page scan.",
+    "Child passport": "If applicable, include children's biographic page scans.",
+    "Other relevant documents": "Any additional evidence that supports your profile.",
+  }
+
+  const [infoOpen, setInfoOpen] = useState<Record<string, boolean>>({})
+  const toggleInfo = (doc: string) => setInfoOpen(prev => ({ ...prev, [doc]: !prev[doc] }))
+
   return (
     <div className="p-6 space-y-6">
       <div>
@@ -186,24 +203,44 @@ export function Documents() {
                   <h4 className="text-sm font-medium text-red-600 mb-2">Required Documents:</h4>
                   <ul className="text-sm space-y-1">
                     {category.required.map((doc, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <span className="text-red-500">•</span>
-                        {doc}
+                      <li key={index} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-red-500">•</span>
+                          {doc}
+                        </div>
+                        <button className="text-xs text-primary flex items-center gap-1" onClick={() => toggleInfo(doc)}>
+                          <Info className="h-3 w-3" /> {infoOpen[doc] ? 'Hide' : 'How should this look?'}
+                        </button>
                       </li>
                     ))}
                   </ul>
+                  {category.required.map((doc, index) => (
+                    infoOpen[doc] ? (
+                      <div key={`req-${index}`} className="text-xs text-muted-foreground ml-4 mb-2">{docHelpText[doc] ?? 'Follow the template and ensure clarity.'}</div>
+                    ) : null
+                  ))}
                 </div>
                 
                 <div>
                   <h4 className="text-sm font-medium text-muted-foreground mb-2">Optional Documents:</h4>
                   <ul className="text-sm space-y-1">
                     {category.optional.map((doc, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <span className="text-muted-foreground">•</span>
-                        {doc}
+                      <li key={index} className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">•</span>
+                          {doc}
+                        </div>
+                        <button className="text-xs text-primary flex items-center gap-1" onClick={() => toggleInfo(doc)}>
+                          <Info className="h-3 w-3" /> {infoOpen[doc] ? 'Hide' : 'How should this look?'}
+                        </button>
                       </li>
                     ))}
                   </ul>
+                  {category.optional.map((doc, index) => (
+                    infoOpen[doc] ? (
+                      <div key={`opt-${index}`} className="text-xs text-muted-foreground ml-4 mb-2">{docHelpText[doc] ?? 'Follow the template and ensure clarity.'}</div>
+                    ) : null
+                  ))}
                 </div>
 
                 <div className="space-y-2">
@@ -307,6 +344,23 @@ export function Documents() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Additional Information for Reviewer</CardTitle>
+          <CardDescription>Provide context that will be sent to your reviewer</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <label className="text-sm font-medium">Referee information</label>
+            <textarea className="w-full mt-1 p-2 border rounded" rows={4} placeholder="Names, titles, emails, and how they know you"></textarea>
+          </div>
+          <div>
+            <label className="text-sm font-medium">Project information</label>
+            <textarea className="w-full mt-1 p-2 border rounded" rows={4} placeholder="Brief description of your key projects to highlight"></textarea>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

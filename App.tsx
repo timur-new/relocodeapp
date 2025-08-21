@@ -1,5 +1,6 @@
 import { useState } from "react"
 import { SidebarProvider } from "./components/ui/sidebar"
+import { AdminMaterialsProvider } from "./components/AdminMaterialsContext"
 import { AppSidebar } from "./components/AppSidebar"
 import { Dashboard } from "./components/Dashboard"
 import { VisaSelection } from "./components/VisaSelection"
@@ -70,12 +71,14 @@ export default function App() {
 
   return (
     <SidebarProvider>
-      <div className="flex h-screen w-full bg-background">
-        <AppSidebar activeTab={activeTab} onTabChange={handleTabChange} />
-        <main className="flex-1 overflow-auto">
-          {renderContent()}
-        </main>
-      </div>
+      <AdminMaterialsProvider>
+        <div className="flex h-screen w-full bg-background">
+          <AppSidebar activeTab={activeTab} onTabChange={handleTabChange} />
+          <main className="flex-1 overflow-auto">
+            {renderContent()}
+          </main>
+        </div>
+      </AdminMaterialsProvider>
     </SidebarProvider>
   )
 }
